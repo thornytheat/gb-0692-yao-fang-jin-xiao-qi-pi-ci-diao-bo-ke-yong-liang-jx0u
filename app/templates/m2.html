@@ -1,2 +1,20 @@
 {% extends 'base.html' %}
-{% block stage_visual %}{% for s in run.usable[:6] %}<div class="stock-bar"><span>{{s.lot}}</span><i style="width:{{s.available/3}}px"></i><b>{{s.available}}</b></div>{% endfor %}{% endblock %}
+{% block stage_visual %}
+<div class="policy-card">
+  <div class="policy-card__title">召回处置策略</div>
+  <p><b class="sev--severe">采用：{{ current.policy.name }}</b></p>
+  <p>{{ current.policy.detail }}</p>
+  <p class="ink-muted">{{ current.policy.alternative }}</p>
+  <p class="ink-muted">本页可调拨量为批号裁决口径（到货−冻结−整包装−召回/冲突停发）；已失效批号在 M3 效期分层剔除，最终可直接调拨量以 M3 为准。</p>
+</div>
+<div class="reconcile">
+  {% for x in run.lot_ledger if x['批号状态'] != '可调拨' %}
+  <div class="stock-bar">
+    <span title="{{ x['到货来源'] }}">{{ x['批号'] }} · {{ x['批号状态'] }}</span>
+    <i style="width:{{ (x['停发量'] / 3) + 2 }}px"></i>
+    <b>停发 {{ x['停发量'] }}{% if x['仅停来源备选可调拨'] %} / 备选 {{ x['仅停来源备选可调拨'] }}{% endif %}</b>
+  </div>
+  {% endfor %}
+  <div class="stock-bar"><span>可调拨批号</span><b>{{ run.stocks|length }} 批</b></div>
+</div>
+{% endblock %}
